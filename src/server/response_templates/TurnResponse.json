@@ -1,0 +1,8 @@
+{
+    "type": "turn",
+    "data":
+        {
+            "currentPlayer": ""
+        },
+    "id": 0
+}

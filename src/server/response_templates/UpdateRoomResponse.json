@@ -1,0 +1,17 @@
+{
+    "type": "update_room",
+    "data":
+        [
+            {
+                "roomId": "",
+                "roomUsers":
+                    [
+                        {
+                            "name": "",
+                            "index": ""
+                        }
+                    ]
+            }
+        ],
+    "id": 0
+}

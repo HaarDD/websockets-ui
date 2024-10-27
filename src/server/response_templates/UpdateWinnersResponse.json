@@ -1,0 +1,11 @@
+{
+    "type": "update_winners",
+    "data":
+        [
+            {
+                "name": "",
+                "wins": 0
+            }
+        ],
+    "id": 0
+}
