@@ -3,7 +3,7 @@
 import { broadcastMessage, unicastMessage } from '../../server';
 import { AddShipsRequest, AttackRequest, PlayerRequest, RandomAttackRequest } from '../dto/Requests';
 import { Player } from '../entity/Player';
-
+import { Room } from '../entity/Room';
 import { GameService } from '../service/GameService';
 import { ErrorMessages } from '../utils/ErrorMessages';
 import ResponseBuilder from '../utils/ResponseBuilder';
@@ -50,12 +50,24 @@ export class GameController {
   }
 
   private sendToAllFreeRooms() {
-    broadcastMessage(this.gameService.getFreeRooms());
+    const freeRooms = this.gameService.getFreeRooms();
+    const response = ResponseBuilder.buildRoomsResponse(
+      freeRooms.map(room => ({
+        roomId: room.indexRoom,
+        roomUsers: room.players.map(player => ({
+          name: player.name,
+          index: player.index
+        }))
+      }))
+    );
+
+    broadcastMessage(response);
   }
 
-  public createRoom(playerIndex: string) {
-    this.gameService.createRoom(playerIndex);
+  public createRoom(playerIndex: string): Room {
+    const room = this.gameService.createRoom(playerIndex);
     this.postRegisterActions();
+    return room;
   }
 
   public addPlayerToRoom(playerIndex: string, roomIndex: string) {
@@ -104,9 +116,17 @@ export class GameController {
 
   public attack(playerIndex: string, attackData: AttackRequest) {
     const room = this.gameService.getRoom(attackData.gameId);
-    const attackStatus = this.gameService.attack(playerIndex, attackData);
+    const attackResults = this.gameService.attack(playerIndex, attackData);
     if (room) {
-      this.broadcastAttackAndTurn(room, playerIndex, attackData, attackStatus);
+      attackResults.forEach((attackResult) => {
+        this.broadcastAttackAndTurn(
+          room,
+          playerIndex,
+          attackResult.x,
+          attackResult.y,
+          attackResult.status);
+      });
+
       this.checkForWinnerAndUpdate(room);
     }
   }
@@ -126,7 +146,7 @@ export class GameController {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private checkForWinnerAndUpdate(room: any): boolean {
+  public checkForWinnerAndUpdate(room: any): boolean {
     const winner = this.gameService.checkFinishGame(room);
     if (winner) {
       const responseWinner = ResponseBuilder.buildFinishGameResponse({ winPlayer: winner });
@@ -138,10 +158,10 @@ export class GameController {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private broadcastAttackAndTurn(room: any, playerIndex: string, attackData: AttackRequest, attackStatus: string) {
+  private broadcastAttackAndTurn(room: any, playerIndex: string, x: number, y: number, attackStatus: string) {
     room.players.forEach((player: { index: string; }) => {
       const responseBuildAttack = ResponseBuilder.buildAttackResponse({
-        position: { x: attackData.x, y: attackData.y },
+        position: { x, y },
         currentPlayer: playerIndex,
         status: attackStatus
       });

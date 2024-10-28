@@ -7,9 +7,6 @@ export interface PlayerRequest {
     password: string;
 }
 
-export interface CreateRoomRequest {
-}
-
 export interface AddToRoomRequest {
     indexRoom: string;
 }

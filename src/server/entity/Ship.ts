@@ -1,3 +1,5 @@
+// src\server\entity\Ship.ts
+
 export interface Ship {
     position: { x: number; y: number };
     direction: boolean;
