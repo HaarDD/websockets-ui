@@ -24,20 +24,26 @@ export class GameService {
 
 
     public registerPlayer(clientIndex: string, playerRequest: PlayerRequest): Player {
-        return this.playerRepository.createPlayer(playerRequest.name, playerRequest.password, clientIndex);
+        return this.playerRepository.createPlayerOrLogin(playerRequest.name, playerRequest.password, clientIndex);
     }
 
     public createRoom(playerIndex: string): Room {
         const createdRoom = this.roomRepository.createRoom();
-        const currentPlayer = this.playerRepository.getPlayerByIndex(playerIndex);
-        if (!currentPlayer) throw new Error('Player not found');
-        this.roomRepository.addUserToRoom(createdRoom.indexRoom, currentPlayer);
+        try {
+            const currentPlayer = this.playerRepository.getPlayerByIndex(playerIndex);
+            if (!currentPlayer) throw new Error('Player not found');
+            this.roomRepository.addUserToRoom(createdRoom.indexRoom, currentPlayer);
+        }
+        catch {
+            this.checkGameFinishOrEnd(createdRoom);
+        }
         return createdRoom;
     }
 
     public addUserToRoom(playerIndex: string, indexRoom: string) {
         const currentPlayer = this.playerRepository.getPlayerByIndex(playerIndex);
         if (!currentPlayer) throw new Error('Player not found');
+        
         this.roomRepository.addUserToRoom(indexRoom, currentPlayer);
     }
 
@@ -58,7 +64,7 @@ export class GameService {
         return this.roomRepository.getRoomByIndex(roomIndex);
     }
 
-    public getFreeRooms(): Room [] {
+    public getFreeRooms(): Room[] {
         return this.roomRepository.getAllRooms().filter(room => room.players.length < 2);
     }
 
@@ -89,7 +95,7 @@ export class GameService {
 
     private executeAttack(playerIndex: string, roomIndex: string, x: number, y: number): AttackResult[] {
         const attackResults: AttackResult[] = [];
-        
+
         const room = this.roomRepository.getRoomByIndex(roomIndex);
         if (!room || !room.isStarted) throw new Error('Invalid room or game not started');
         if (room.nextPlayerIndex !== playerIndex) throw new Error('Invalid player turn');
@@ -100,7 +106,7 @@ export class GameService {
 
         const hitShip = opponentShips.find(ship => this.isHit(ship, x, y));
         if (!hitShip) {
-            attackResults.push(new AttackResult(x,y,'miss'));
+            attackResults.push(new AttackResult(x, y, 'miss'));
             this.switchToNextPlayer(room);
             return attackResults;
         } else {
@@ -112,7 +118,7 @@ export class GameService {
                 return attackResults;
             }
         }
-        attackResults.push(new AttackResult(x,y,'shot'));
+        attackResults.push(new AttackResult(x, y, 'shot'));
         return attackResults;
     }
 
@@ -130,7 +136,7 @@ export class GameService {
     private addKilledForEachCell(ship: Ship, attackResults: AttackResult[]): void {
         const { x: startX, y: startY } = ship.position;
         const isHorizontal = !ship.direction;
-        
+
         for (let i = 0; i < ship.length; i++) {
             const cellX = isHorizontal ? startX + i : startX;
             const cellY = isHorizontal ? startY : startY + i;
@@ -142,10 +148,10 @@ export class GameService {
         const { x: startX, y: startY } = ship.position;
         const length = ship.length;
         const isHorizontal = !ship.direction;
-    
+
         const xRange = isHorizontal ? [startX - 1, startX + length] : [startX - 1, startX + 1];
         const yRange = isHorizontal ? [startY - 1, startY + 1] : [startY - 1, startY + length];
-    
+
         for (let x = xRange[0]!; x <= xRange[1]!; x++) {
             for (let y = yRange[0]!; y <= yRange[1]!; y++) {
 
@@ -160,14 +166,31 @@ export class GameService {
             }
         }
     }
-    
+
 
     private switchToNextPlayer(room: Room) {
         room.nextPlayerIndex = room.players[(room.nextPlayerCounter % 2)]?.index!;
         room.nextPlayerCounter = (room.nextPlayerCounter % 2) + 1;
     }
 
-    public checkFinishGame(room: Room): string | undefined {
+    public checkGameFinishOrEnd(room: Room): string | undefined {
+
+        
+
+        if (room.players.length === 0) {
+            this.roomRepository.removeRoom(room);
+            return undefined;
+        }
+
+        if (room.players.length === 1) {
+            const winnerPlayerIndex = room.players[0]?.index;
+            const player = this.playerRepository.getPlayerByIndex(winnerPlayerIndex!);
+            if (!player) throw new Error('Finish: unable to find player');
+            player.wins++;
+            this.roomRepository.removeRoom(room);
+            return winnerPlayerIndex;
+        }
+
         let emptyShipsFound = false;
         let winnerPlayerIndex: string | undefined;
 
@@ -183,6 +206,7 @@ export class GameService {
             const player = this.playerRepository.getPlayerByIndex(winnerPlayerIndex);
             if (!player) throw new Error('Finish: unable to find player');
             player.wins++;
+            this.roomRepository.removeRoom(room);
             return player.index;
         }
         return undefined;
@@ -191,4 +215,15 @@ export class GameService {
     public getWinners(): Player[] {
         return Array.from(this.playerRepository.getAllPlayers().values()).filter(player => player.wins > 0);
     }
+
+    public removeDisconnectedPlayerFromRoom(playerIndex: string): Room | undefined {
+        const room = this.roomRepository.getRoomByPlayerIndex(playerIndex);
+        if (room) {
+            this.roomRepository.removePlayerFromRoom(room.indexRoom, playerIndex);
+            return this.roomRepository.getRoomByIndex(room.indexRoom);
+        }
+        return undefined;
+
+    }
+
 }

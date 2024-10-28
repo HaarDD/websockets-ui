@@ -21,10 +21,15 @@ wss.on('connection', (ws) => {
 
     ws.on('message', (message) => {
         wsRoutes.handleMessage(clientIndex, message.toString());
+        console.log('---------- RESULT (INCOMING MESSAGE) START ---------');
+        console.log(message.toString());
+        console.log('---------- RESULT (INCOMING MESSAGE) END ---------\n');
     });
 
     ws.on('close', () => {
+        wsRoutes.handleClose(clientIndex);
         delete clients[clientIndex];
+        console.log(`---------- RESULT (DISCONNECT, CLIENT ${clientIndex}) START ---------\n`);
     });
 });
 
@@ -33,10 +38,16 @@ export function broadcastMessage(message: string) {
     for (const clientIndex in clients) {
         sendMessage(clients[clientIndex] as WebSocket, message);
     }
+    console.log('---------- RESULT (OUTCOMING MESSAGE, BROADCAST) START ---------');
+    console.log(message.toString());
+    console.log('---------- RESULT (OUTCOMING MESSAGE) END ---------\n');
 }
 
 export function unicastMessage(clientIndex: string, message: string) {
     sendMessage(clients[clientIndex] as WebSocket, message);
+    console.log(`---------- RESULT (OUTCOMING MESSAGE, UNICAST TO ${clientIndex}) START ---------`);
+    console.log(message.toString());
+    console.log('---------- RESULT (OUTCOMING MESSAGE) END ---------\n');
 }
 
 function sendMessage(client: WebSocket, message: string) {

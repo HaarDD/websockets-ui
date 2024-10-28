@@ -15,15 +15,23 @@ export class PlayerRepository {
         return PlayerRepository.instance;
     }
 
-    public createPlayer(name: string, password: string, index: string): Player {
-        if (this.players.has(index)) {
-            const player = this.players.get(index);
-            if (player?.password === password) {
-                return player;
+    public createPlayerOrLogin(name: string, password: string, index: string): Player {
+        const existingPlayer = this.getPlayerByName(name);
+
+
+        if (existingPlayer) {
+            if (existingPlayer.password === password) {
+                return existingPlayer;
             } else {
                 throw new Error('Password is incorrect!');
             }
         } else {
+            if(name.length < 5){
+                throw new Error('User must be more than 4 symbols!');
+            }
+            if(password.length < 5){
+                throw new Error('Password must be more than 4 symbols!');
+            }
             const player = new Player(name, password, index);
             this.players.set(index, player);
             return player;
@@ -36,5 +44,9 @@ export class PlayerRepository {
 
     public getAllPlayers(): Player[] {
         return Array.from(this.players.values());
+    }
+
+    private getPlayerByName(name: string): Player | undefined {
+        return Array.from(this.players.values()).find(player => player.name === name);
     }
 }

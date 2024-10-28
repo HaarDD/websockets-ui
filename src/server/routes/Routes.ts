@@ -66,6 +66,11 @@ export class WebSocketRoutes {
         }
     }
 
+    public handleClose(playerIndex: string){
+        this.gameController.playerDisconnected(playerIndex);
+    }
+
+
     private startAiLoop(room: Room, aiIndex: string) {
         const aiAttackInterval = setInterval(() => {
             try{

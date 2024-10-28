@@ -147,7 +147,7 @@ export class GameController {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public checkForWinnerAndUpdate(room: any): boolean {
-    const winner = this.gameService.checkFinishGame(room);
+    const winner = this.gameService.checkGameFinishOrEnd(room);
     if (winner) {
       const responseWinner = ResponseBuilder.buildFinishGameResponse({ winPlayer: winner });
       room.players.forEach((player: { index: string; }) => unicastMessage(player.index, responseWinner));
@@ -185,4 +185,23 @@ export class GameController {
       broadcastMessage(response);
     }
   }
+
+  public playerDisconnected(playerIndex: string){
+      const room = this.gameService.removeDisconnectedPlayerFromRoom(playerIndex);
+      console.log(room?.players);
+      if(room){
+        const winner = this.gameService.checkGameFinishOrEnd(room);
+        if (winner) {
+          const responseWinner = ResponseBuilder.buildFinishGameResponse({ winPlayer: winner });
+          room.players.forEach((player: { index: string; }) => unicastMessage(player.index, responseWinner));
+          this.checkWinners();
+        }
+      }
+      
+
+  }
+
 }
+
+
+

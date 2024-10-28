@@ -28,23 +28,32 @@ export class RoomRepository {
         return this.rooms.get(indexRoom);
     }
 
+    public getRoomByPlayerIndex(playerIndex: string): Room | undefined {
+        for (const room of this.rooms.values()) {
+            if (room.players.some(player => player.index === playerIndex)) {
+                return room;
+            }
+        }
+        return undefined;
+    }
+
     public getAllRooms(): Room[] {
         return Array.from(this.rooms.values());
     }
 
     public addUserToRoom(indexRoom: string, player: Player): void {
         const room = this.rooms.get(indexRoom);
-        if(room){
-            if(!room?.players.some(p => p.index === player.index)){
-                if (room) room.players.push(player);
-            }else {
-                throw new Error('Player already exists in the room!');
-            }
-        } else{
-            throw new Error('Room is not found!');
+    
+        if (!room) {
+            throw new Error('Room not found!');
         }
-        
-        
+    
+        // Проверка на наличие игрока в текущей комнате
+        if (!room.players.some(p => p.index === player.index)) {
+            room.players.push(player);
+        } else {
+            throw new Error('Player already exists in the room!');
+        }
     }
 
     public removeRoom(room: Room): void{
@@ -52,5 +61,21 @@ export class RoomRepository {
     }
 
     
+    public removePlayerFromRoom(indexRoom: string, playerIndex: string): void {
+        const room = this.rooms.get(indexRoom);
+    
+        if (!room) {
+            throw new Error('Room not found!');
+        }
+    
+        const playerIndexInRoom = room.players.findIndex(player => player.index === playerIndex);
+    
+        if (playerIndexInRoom === -1) {
+            throw new Error('Player not found in the room!');
+        }
+    
+        room.players.splice(playerIndexInRoom, 1);
+    }
+
 
 }
