@@ -1,31 +1,52 @@
-# RSSchool NodeJS websocket task template
-> Static http server and base task packages. 
-> By default WebSocket client tries to connect to the 3000 port.
+# Battleship Game Server & RSSchool NodeJS websocket task template
 
-## Installation
-1. Clone/download repo
-2. `npm install`
+This project is a server-side implementation of a multiplayer battleship game, built with TypeScript and WebSocket.
+Assignment link: [https://github.com/AlreadyBored/nodejs-assignments/blob/main/assignments/battleship/assignment.md](https://github.com/AlreadyBored/nodejs-assignments/blob/main/assignments/battleship/assignment.md)
 
-## Usage
-**Development**
+## Features
+- **Player Registration**: Players can register with a name and password.
+- **Room Management**: Supports room creation, joining, and updating.
+- **Ship Placement**: Players can add ships to rooms with specific positions, directions, and types.
+- **Game Progression**: The server manages turn-based gameplay, handling attacks and random attacks.
+- **Winner Determination**: Tracks the number of wins and broadcasts updates.
+- **Single player**: Option to play with simple algorithm, with automated attacks, game progression and random map templates.
 
-`npm run start:dev`
+## Running the Server
 
-* App served @ `http://localhost:8181` with nodemon
+There are several ways to start the server, depending on your needs:
 
-**Production**
+1. **Production Build**:
+   - Build the project with Webpack and start the server:
+     ```bash
+     npm run start
+     ```
+   - This command will bundle the TypeScript code into a single JavaScript file using Webpack, then execute it via Node.js from the `dist` folder.
 
-`npm run start`
+2. **Development Server**:
+   - Run the server using `ts-node-dev` for faster development:
+     ```bash
+     npm run start:dev
+     ```
+   - This command will directly execute the `src/server.ts` file with `ts-node-dev`, allowing for automatic restarts on file changes.
 
-* App served @ `http://localhost:8181` without nodemon
+3. **Frontend Server**:
+   - Start the frontend server:
+     ```bash
+     npm run start:front
+     ```
+   - This command will run `index.mjs` with Node.js to serve the frontend application.
 
----
+4. **Frontend Development Server**:
+   - Run the frontend server with `nodemon` for live reloads:
+     ```bash
+     npm run start:front:dev
+     ```
+   - This will start the frontend using `nodemon`, which watches for file changes and restarts the server as needed.
 
-**All commands**
-
-Command | Description
---- | ---
-`npm run start:dev` | App served @ `http://localhost:8181` with nodemon
-`npm run start` | App served @ `http://localhost:8181` without nodemon
-
-**Note**: replace `npm` with `yarn` in `package.json` if you use yarn.
+## Dependencies
+- **WebSocket**: Provides real-time communication.
+- **dotenv**: For managing environment variables.
+- **TypeScript**: Type-safe programming language used to develop the server.
+- **Webpack**: Bundles the server code for production.
+- **ts-node-dev**: Enables running TypeScript directly with automatic restarts during development.
+- **nodemon**: Monitors changes in the backend/frontend files and restarts the server.
