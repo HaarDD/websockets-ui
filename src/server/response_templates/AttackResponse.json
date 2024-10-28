@@ -1,0 +1,14 @@
+{
+    "type": "attack",
+    "data":
+        {
+            "position":
+            {
+                "x": "",
+                "y": ""
+            },
+            "currentPlayer": "", 
+            "status": ""
+        },
+    "id": 0
+}

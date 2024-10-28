@@ -1,0 +1,20 @@
+{
+    "type": "start_game",
+    "data":
+        {
+            "ships": 
+                [
+                    {
+                        "position": {
+                            "x": "",
+                            "y": ""
+                        },
+                        "direction": "",
+                        "length": "",
+                        "type": "small"
+                    }
+                ],
+            "currentPlayerIndex": ""
+        },
+    "id": 0
+}
