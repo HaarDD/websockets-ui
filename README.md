@@ -1,3 +1,7 @@
+# Development branch: [https://github.com/HaarDD/websockets-ui/tree/develop](https://github.com/HaarDD/websockets-ui/tree/develop)
+
+### Default readme below
+
 # RSSchool NodeJS websocket task template
 > Static http server and base task packages. 
 > By default WebSocket client tries to connect to the 3000 port.
