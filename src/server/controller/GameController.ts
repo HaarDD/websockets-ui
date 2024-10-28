@@ -188,7 +188,6 @@ export class GameController {
 
   public playerDisconnected(playerIndex: string){
       const room = this.gameService.removeDisconnectedPlayerFromRoom(playerIndex);
-      console.log(room?.players);
       if(room){
         const winner = this.gameService.checkGameFinishOrEnd(room);
         if (winner) {

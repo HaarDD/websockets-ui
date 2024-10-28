@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // src\server.ts
 
 import WebSocket from 'ws';
