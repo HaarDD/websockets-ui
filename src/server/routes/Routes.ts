@@ -4,6 +4,9 @@ import { DefaultMessage } from '../dto/DefaultMessage';
 import { parseMessage, validateData } from '../utils/MessageUtils';
 import { GameController } from '../controller/GameController';
 import { AddShipsRequest, AddToRoomRequest, AttackRequest, PlayerRequest, RandomAttackRequest } from '../dto/Requests';
+import { generateUniqueIndex } from '../utils/GenerationUtils';
+import { Room } from '../entity/Room';
+import { getRandomMap } from '../utils/BattleshipMapTemplates';
 
 
 export class WebSocketRoutes {
@@ -36,8 +39,22 @@ export class WebSocketRoutes {
                 case 'randomAttack':
                     const randomAttackData = validateData<RandomAttackRequest>(defaultMessage.data);
                     this.gameController.randomAttack(playerIndex, randomAttackData);
-                break;
+                    break;
+                case 'single_play':
+                    const aiIndex = generateUniqueIndex();
+                    const aiRequest: PlayerRequest = { name: 'AI_Opponent', password: 'ai-pass' };
 
+                    this.gameController.registerPlayer(aiIndex, aiRequest);
+
+                    const room = this.gameController.createRoom(playerIndex);
+
+                    this.gameController.addPlayerToRoom(aiIndex, room.indexRoom);
+
+                    this.gameController.addShipsToRoom(aiIndex, getRandomMap(room.indexRoom, aiIndex)!);
+
+                    this.startAiLoop(room, aiIndex);
+
+                    break;
                 default:
                     throw new Error('Unexpected request type!');
             }
@@ -49,6 +66,24 @@ export class WebSocketRoutes {
         }
     }
 
+    private startAiLoop(room: Room, aiIndex: string) {
+        const aiAttackInterval = setInterval(() => {
+            try{
+                const attackData = {
+                    gameId: room.indexRoom,
+                    x: Math.floor(Math.random() * 10),
+                    y: Math.floor(Math.random() * 10),
+                    indexPlayer: aiIndex,
+                };
+                
+                this.gameController.attack(aiIndex, attackData);
+    
+                if (room && this.gameController.checkForWinnerAndUpdate(room)) {
+                    clearInterval(aiAttackInterval);
+                }
+            }
+            catch {
+            }
+        }, 1500); 
+    }
 }
-
-
